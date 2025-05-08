@@ -16,16 +16,17 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtUtil jwtUtil) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)  // Отключаем CSRF
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()  // Разрешаем доступ к аутентификационным эндпоинтам
-                        .anyRequest().authenticated()  // Все остальные эндпоинты требуют аутентификацию
+//                        .anyRequest().authenticated()  // Все остальные эндпоинты требуют аутентификацию
+                        .anyRequest().permitAll()  // Все остальные эндпоинты требуют аутентификацию
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // Устанавливаем, что сессии не будут использоваться
                 )
-                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);  // Добавляем фильтр JWT
+                .addFilterBefore(jwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);  // Добавляем фильтр JWT
 
         return http.build();
     }
@@ -41,7 +42,7 @@ class SecurityConfig {
     }
 
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter();
+    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtil jwtUtil) {
+        return new JwtAuthenticationFilter(jwtUtil);
     }
 }

@@ -1,6 +1,7 @@
 package org.example.creativelab.controller;
 
 import org.example.creativelab.model.AuthRequest;
+import org.example.creativelab.model.UserEntity;
 import org.example.creativelab.security.JwtUtil;
 import org.example.creativelab.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,16 +35,20 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody AuthRequest authRequest) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
+        );
 
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword()));
+        UserEntity user = userService.getUserByEmail(authRequest.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        // Генерация Access и Refresh токенов
         String accessToken = jwtUtil.generateAccessToken(authRequest.getEmail());
         String refreshToken = jwtUtil.generateRefreshToken(authRequest.getEmail());
 
         Map<String, String> response = new HashMap<>();
         response.put("accessToken", accessToken);
         response.put("refreshToken", refreshToken);
+        response.put("userId", user.getId().toString());
 
         return ResponseEntity.ok(response);
     }
@@ -64,8 +69,8 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String register(@RequestBody AuthRequest request) {
-        userService.saveUser(request.getEmail(), request.getPassword());
-        return "User registered";
+    public ResponseEntity<Long> register(@RequestBody AuthRequest request) {
+        Long userId = userService.saveUser(request.getEmail(), request.getPassword()).getId();
+        return ResponseEntity.ok(userId);
     }
 }

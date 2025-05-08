@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -21,11 +22,19 @@ public class UserService implements UserDetailsService {
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
-    public void saveUser(String email, String password) {
+    public UserEntity saveUser(String email, String password) {
         UserEntity user = new UserEntity();
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
-        userRepository.save(user);
+        return userRepository.save(user);
+    }
+
+    public Optional<UserEntity> findById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    public Optional<UserEntity> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     @Override

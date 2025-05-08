@@ -4,7 +4,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -14,13 +13,16 @@ import java.util.ArrayList;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private JwtUtil jwtUtils;
+    private final JwtUtil jwtUtils;
+
+    public JwtAuthenticationFilter(JwtUtil jwtUtils) {
+        this.jwtUtils = jwtUtils;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = getTokenFromRequest(request);
-
+        System.out.println("JwtAuthenticationFilter triggered for URI: " + request.getRequestURI());
         if (token != null && jwtUtils.validateToken(token, jwtUtils.extractUsername(token))) {
             String username = jwtUtils.extractUsername(token);
             UsernamePasswordAuthenticationToken authentication =
