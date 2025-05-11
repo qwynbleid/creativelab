@@ -69,8 +69,17 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Long> register(@RequestBody AuthRequest request) {
-        Long userId = userService.saveUser(request.getEmail(), request.getPassword()).getId();
-        return ResponseEntity.ok(userId);
+    public ResponseEntity<Map<String, String>> register(@RequestBody AuthRequest request) {
+        UserEntity user = userService.saveUser(request.getEmail(), request.getPassword());
+
+        String accessToken = jwtUtil.generateAccessToken(request.getEmail());
+        String refreshToken = jwtUtil.generateRefreshToken(request.getEmail());
+
+        Map<String, String> response = new HashMap<>();
+        response.put("accessToken", accessToken);
+        response.put("refreshToken", refreshToken);
+        response.put("userId", user.getId().toString());
+
+        return ResponseEntity.ok(response);
     }
 }

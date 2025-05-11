@@ -20,8 +20,8 @@ class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)  // Отключаем CSRF
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()  // Разрешаем доступ к аутентификационным эндпоинтам
-//                        .anyRequest().authenticated()  // Все остальные эндпоинты требуют аутентификацию
-                        .anyRequest().permitAll()  // Все остальные эндпоинты требуют аутентификацию
+                        .anyRequest().authenticated()  // Все остальные эндпоинты требуют аутентификацию
+//                        .anyRequest().permitAll()  // Все остальные эндпоинты требуют аутентификацию
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // Устанавливаем, что сессии не будут использоваться

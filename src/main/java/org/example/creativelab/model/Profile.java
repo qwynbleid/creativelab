@@ -1,5 +1,6 @@
 package org.example.creativelab.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
@@ -39,7 +40,7 @@ public class Profile {
     @ElementCollection
     private List<String> interests;
 
-    @JsonIgnore
+    @JsonBackReference
     @OneToOne(mappedBy = "profile")
     private UserEntity user;
 }

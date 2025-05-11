@@ -1,5 +1,7 @@
 package org.example.creativelab.controller;
 
+import org.example.creativelab.dto.ProfileDTO;
+import org.example.creativelab.mapper.ProfileMapper;
 import org.example.creativelab.model.Profile;
 import org.example.creativelab.service.ProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,22 +24,26 @@ public class ProfileController {
     @Autowired
     private ProfileService profileService;
 
-    // Оновлення або створення профілю
+    @Autowired
+    private ProfileMapper profileMapper;
+
     @PostMapping("/{userId}")
-    public ResponseEntity<Profile> updateProfile(@PathVariable Long userId,
-                                                 @RequestParam String username,
-                                                 @RequestParam String fullName,
-                                                 @RequestParam String bio,
-                                                 @RequestParam(value = "profilePicture", required = false) MultipartFile profilePicture,
-                                                 @RequestParam(value = "interests", required = false) List<String> interests) throws IOException {
+    public ResponseEntity<ProfileDTO> updateProfile(@PathVariable Long userId,
+                                                    @RequestParam String username,
+                                                    @RequestParam String fullName,
+                                                    @RequestParam String bio,
+                                                    @RequestParam(value = "profilePicture", required = false) MultipartFile profilePicture,
+                                                    @RequestParam(value = "interests", required = false) List<String> interests) throws IOException {
+
         Profile updatedProfile = profileService.createOrUpdateProfile(userId, username, fullName, bio, profilePicture, interests);
-        return ResponseEntity.ok(updatedProfile);
+        ProfileDTO dto = profileMapper.toDto(updatedProfile);
+        return ResponseEntity.ok(dto);
     }
 
-    // Отримання профілю
     @GetMapping("/{userId}")
-    public ResponseEntity<Profile> getProfile(@PathVariable Long userId) {
+    public ResponseEntity<ProfileDTO> getProfile(@PathVariable Long userId) {
         Profile profile = profileService.getProfile(userId);
-        return ResponseEntity.ok(profile);
+        ProfileDTO dto = profileMapper.toDto(profile);
+        return ResponseEntity.ok(dto);
     }
 }

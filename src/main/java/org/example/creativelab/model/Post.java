@@ -45,7 +45,7 @@ public class Post {
     private String content;
 
     @Lob
-    private byte[] imageData;
+    private byte[] postImage;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

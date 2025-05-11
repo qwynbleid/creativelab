@@ -1,5 +1,6 @@
 package org.example.creativelab.service;
 
+import jakarta.transaction.Transactional;
 import org.example.creativelab.dto.CommentDTO;
 import org.example.creativelab.dto.PostDTO;
 import org.example.creativelab.mapper.CommentMapper;
@@ -13,6 +14,7 @@ import org.example.creativelab.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -49,18 +51,18 @@ public class PostService {
         return postRepository.save(post);
     }
 
-    public PostDTO getPostById(Long id) {
-        Post post = postRepository.findById(id)
+    public PostDTO getPostById(Long postId, Long userId) {
+        Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
-        return postMapper.toDto(post);
+        return postMapper.toDto(post, userId);
     }
 
-    public List<PostDTO> getAllUserPosts(Long id) {
-        UserEntity user = userRepository.findById(id)
+    public List<PostDTO> getAllUserPosts(Long userId) {
+        UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return user.getPosts().stream()
-                .map(postMapper::toDto)
+                .map(post -> postMapper.toDto(post, userId))
                 .collect(Collectors.toList());
     }
 
@@ -110,16 +112,37 @@ public class PostService {
         return commentMapper.toDto(saved);
     }
 
+    @Transactional
     public List<PostDTO> getFeedForUser(Long userId) {
         UserEntity user = userEntityService.getUserById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
 
         Set<UserEntity> following = user.getFollowing();
-
         List<Post> posts = postRepository.findByUserInOrderByCreatedAtDesc(following);
 
         return posts.stream()
-                .map(postMapper::toDto)
+                .map(post -> postMapper.toDto(post, userId))
+                .collect(Collectors.toList());
+    }
+    public boolean isPostLikedByUser(Long postId, Long userId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        return post.getLikes().stream()
+                .anyMatch(like -> like.getId().equals(userId));
+    }
+
+    public List<PostDTO> getRecommendedPosts(Long userId) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<String> interests = user.getProfile().getInterests();
+        if (interests.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Post> recommendedPosts = postRepository.findByTagsIn(interests);
+        return recommendedPosts.stream()
+                .map(post -> postMapper.toDto(post, userId))
                 .collect(Collectors.toList());
     }
 }

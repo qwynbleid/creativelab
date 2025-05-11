@@ -4,6 +4,7 @@ import org.example.creativelab.dto.UserDTO;
 import org.example.creativelab.mapper.UserMapper;
 import org.example.creativelab.model.UserEntity;
 import org.example.creativelab.service.UserEntityService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
@@ -29,8 +31,10 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public UserEntity getUser(@PathVariable Long userId) {
-        return userService.getUserById(userId).orElseThrow();
+    public UserDTO getUser(@PathVariable Long userId) {
+        return userService.getUserById(userId)
+                .map(userMapper::toDTO)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
     }
 
     @PostMapping("/follow")
@@ -83,4 +87,18 @@ public class UserController {
         }
     }
 
+    @GetMapping("/{userId}/follow-stats")
+    public ResponseEntity<Map<String, Integer>> getFollowStats(@PathVariable Long userId) {
+        return ResponseEntity.ok(userService.getFollowStats(userId));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<UserDTO>> searchUsers(@RequestParam String searchTerm) {
+        List<UserDTO> users = userService.searchUsers(searchTerm)
+                .stream()
+                .map(userMapper::toDTO)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(users);
+    }
 }

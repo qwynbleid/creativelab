@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -74,5 +75,22 @@ public class UserEntityService {
         UserEntity user = userEntityRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
         return new ArrayList<>(user.getFollowing());
+    }
+
+    public Map<String, Integer> getFollowStats(Long userId) {
+        UserEntity user = userEntityRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+
+        int followersCount = user.getFollowers().size();
+        int followingCount = user.getFollowing().size();
+
+        return Map.of(
+                "followersCount", followersCount,
+                "followingCount", followingCount
+        );
+    }
+
+    public List<UserEntity> searchUsers(String searchTerm) {
+        return userEntityRepository.findByProfile_UsernameContainingIgnoreCaseOrProfile_FullNameContainingIgnoreCase(searchTerm, searchTerm);
     }
 }
