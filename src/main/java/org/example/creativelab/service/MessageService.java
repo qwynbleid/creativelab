@@ -63,8 +63,7 @@ public class MessageService {
         UserEntity user = new UserEntity();
         user.setId(userId);
 
-        // Получаем все сообщения, где пользователь является получателем
-        List<Message> messages = messageRepository.findByReceiver(user);
+        List<Message> messages = messageRepository.findBySenderOrReceiver(user, user);
         return messages.stream()
                 .map(messageMapper::toMessageDTO)
                 .collect(Collectors.toList());
