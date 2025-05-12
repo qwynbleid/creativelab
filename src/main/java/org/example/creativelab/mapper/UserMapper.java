@@ -22,6 +22,8 @@ public class UserMapper {
             dto.setProfilePicture(null);
         }
 
+        dto.setInterests(user.getProfile().getInterests());
+
         return dto;
     }
 }

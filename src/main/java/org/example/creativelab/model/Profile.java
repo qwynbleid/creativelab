@@ -2,6 +2,7 @@ package org.example.creativelab.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -35,6 +36,7 @@ public class Profile {
     private String bio;
 
     @Lob
+    @Column(columnDefinition = "LONGBLOB")
     private byte[] profilePicture;
 
     @ElementCollection

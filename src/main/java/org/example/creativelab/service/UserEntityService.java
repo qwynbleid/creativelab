@@ -1,6 +1,8 @@
 package org.example.creativelab.service;
 
 import jakarta.transaction.Transactional;
+import org.example.creativelab.dto.UserDTO;
+import org.example.creativelab.mapper.UserMapper;
 import org.example.creativelab.model.UserEntity;
 import org.example.creativelab.repository.UserEntityRepository;
 import org.springframework.stereotype.Service;
@@ -9,14 +11,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserEntityService {
 
     private final UserEntityRepository userEntityRepository;
+    private final UserMapper userMapper;
 
-    public UserEntityService(UserEntityRepository userEntityRepository) {
+    public UserEntityService(UserEntityRepository userEntityRepository, UserMapper userMapper) {
         this.userEntityRepository = userEntityRepository;
+        this.userMapper = userMapper;
     }
 
     public Optional<UserEntity> getUserById(Long userId) {
@@ -88,6 +93,13 @@ public class UserEntityService {
                 "followersCount", followersCount,
                 "followingCount", followingCount
         );
+    }
+
+    public List<UserDTO> getUsersByInterestsExcludingUser(List<String> interests, Long userId) {
+        List<UserEntity> users = userEntityRepository.findByInterestsInExcludingUser(interests, userId);
+        return users.stream()
+                .map(userMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     public List<UserEntity> searchUsers(String searchTerm) {

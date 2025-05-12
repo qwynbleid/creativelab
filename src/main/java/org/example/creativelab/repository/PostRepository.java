@@ -11,4 +11,5 @@ import java.util.Set;
 public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByUserInOrderByCreatedAtDesc(Set<UserEntity> users);
     List<Post> findByTagsIn(Collection<String> tags);
+    List<Post> findByTagsContainingAndUserIdNot(String tag, Long userId);
 }

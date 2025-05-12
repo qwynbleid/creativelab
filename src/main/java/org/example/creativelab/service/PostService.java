@@ -12,10 +12,14 @@ import org.example.creativelab.repository.CommentRepository;
 import org.example.creativelab.repository.PostRepository;
 import org.example.creativelab.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -40,15 +44,22 @@ public class PostService {
         this.userEntityService = userEntityService;
     }
 
-    public Post createPost(String title, String content, Long userId) {
+    public String createPost(String title, String content, Long userId, List<String> tags, MultipartFile file) throws IOException {
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 
         Post post = new Post();
         post.setTitle(title);
         post.setContent(content);
         post.setUser(user);
+        post.setTags(new HashSet<>(tags));
 
-        return postRepository.save(post);
+        if (file != null && !file.isEmpty()) {
+            post.setPostImage(file.getBytes());
+        }
+
+        post = postRepository.save(post);
+
+        return "Post created: " + post.getId();
     }
 
     public PostDTO getPostById(Long postId, Long userId) {
@@ -143,6 +154,18 @@ public class PostService {
         List<Post> recommendedPosts = postRepository.findByTagsIn(interests);
         return recommendedPosts.stream()
                 .map(post -> postMapper.toDto(post, userId))
+                .collect(Collectors.toList());
+    }
+
+    public Map<String, Long> getPopularTags() {
+        return postRepository.findAll().stream()
+                .flatMap(post -> post.getTags().stream())
+                .collect(Collectors.groupingBy(tag -> tag, Collectors.counting()));
+    }
+
+    public List<PostDTO> searchPostsByTag(String tag, Long excludeUserId) {
+        return postRepository.findByTagsContainingAndUserIdNot(tag, excludeUserId).stream()
+                .map(post -> postMapper.toDto(post, excludeUserId))
                 .collect(Collectors.toList());
     }
 }

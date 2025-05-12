@@ -45,6 +45,7 @@ public class Post {
     private String content;
 
     @Lob
+    @Column(columnDefinition = "LONGBLOB")
     private byte[] postImage;
 
     @Column(nullable = false, updatable = false)

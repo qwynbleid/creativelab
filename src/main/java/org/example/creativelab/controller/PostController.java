@@ -34,18 +34,10 @@ public class PostController {
             @RequestParam("title") String title,
             @RequestParam("content") String content,
             @RequestParam(value = "file", required = false) MultipartFile file,
-            @RequestParam("userId") Long userId) {
-
+            @RequestParam("userId") Long userId,
+            @RequestParam(value = "tags", required = false) List<String> tags) {
         try {
-            Post post = postService.createPost(title, content, userId);
-
-            if (file != null && !file.isEmpty()) {
-                post.setPostImage(file.getBytes());
-                postService.savePost(post); 
-                return ResponseEntity.ok("Post created with image: " + post.getId());
-            }
-
-            return ResponseEntity.ok("Post created: " + post.getId());
+            return ResponseEntity.ok(postService.createPost(title, content, userId, tags, file));
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating post with image");
         }
@@ -108,5 +100,17 @@ public class PostController {
     @GetMapping("/{userId}/all-posts")
     public ResponseEntity<List<PostDTO>> getPosts(@PathVariable Long userId) {
         return ResponseEntity.ok(postService.getAllUserPosts(userId));
+    }
+
+    @GetMapping("/tags/popular")
+    public ResponseEntity<Map<String, Long>> getPopularTags() {
+        return ResponseEntity.ok(postService.getPopularTags());
+    }
+
+    @GetMapping("/search/by-tag")
+    public ResponseEntity<List<PostDTO>> searchPostsByTag(
+            @RequestParam("tag") String tag,
+            @RequestParam("excludeUserId") Long excludeUserId) {
+        return ResponseEntity.ok(postService.searchPostsByTag(tag, excludeUserId));
     }
 }

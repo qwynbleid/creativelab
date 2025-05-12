@@ -2,7 +2,6 @@ package org.example.creativelab.controller;
 
 import org.example.creativelab.dto.UserDTO;
 import org.example.creativelab.mapper.UserMapper;
-import org.example.creativelab.model.UserEntity;
 import org.example.creativelab.service.UserEntityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -85,6 +84,12 @@ public class UserController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(List.of());
         }
+    }
+
+    @GetMapping("/suggested")
+    public ResponseEntity<List<UserDTO>> findUsersByInterests(@RequestParam List<String> interests, @RequestParam Long userId) {
+        List<UserDTO> users = userService.getUsersByInterestsExcludingUser(interests, userId);
+        return ResponseEntity.ok(users);
     }
 
     @GetMapping("/{userId}/follow-stats")
